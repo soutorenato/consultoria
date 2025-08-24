@@ -1,0 +1,462 @@
+/* ================================
+   Velzon-like (limpo)
+   Cards/Stats/Dropdown/Modal
+================================ */
+:root{
+  --vz-primary:#405189;
+  --vz-success:#0ab39c;
+  --vz-danger:#f06548;
+  --vz-warning:#f7b84b;
+
+  --vz-heading:#495057;
+  --vz-body:#212529;
+  --vz-muted:#878a99;
+
+  --vz-border:#e9ebec;
+  --vz-card-bg:#ffffff;
+  --vz-app-bg:#f3f6f9;
+
+  --shadow-sm:0 .25rem .75rem rgba(56,65,74,.10);
+  --shadow-md:0 .5rem 1.25rem rgba(56,65,74,.16);
+
+  /* gutters laterais */
+  --app-gutter:12px;
+}
+@media (min-width:576px){ :root{ --app-gutter:16px; } }
+@media (min-width:992px){ :root{ --app-gutter:24px; } }
+@media (min-width:1400px){ :root{ --app-gutter:32px; } }
+
+/* ===== Base ===== */
+*{ box-sizing:border-box; }
+html{ -webkit-text-size-adjust:100%; }
+body{
+  font-family:"Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size:.95rem; line-height:1.45; margin:0;
+  color:var(--vz-body); background:var(--vz-app-bg);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+img,svg,video{ max-width:100%; height:auto; display:block; }
+h1,h2,h3,h4,h5,p{ margin:0; }
+h1{ font-size:1.6rem; font-weight:600; letter-spacing:.2px; color:var(--vz-heading); margin:24px 0; text-align:center; }
+
+/* ===== Topbar ===== */
+.topbar{
+  position:sticky; top:0; z-index:1100;
+  background:#fff; border-bottom:1px solid var(--vz-border); box-shadow:var(--shadow-sm);
+}
+.navbar-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px var(--app-gutter); background:#0b0f17;
+  flex-wrap:nowrap;
+}
+.horizontal-logo .logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-sm img{height:22px}
+.logo-lg img{height:17px}
+
+/* agrupamento direita/esquerda sempre em linha */
+.navbar-header > .d-flex{
+  display:flex; align-items:center; gap:12px; flex-wrap:nowrap; white-space:nowrap;
+}
+.navbar-header > .d-flex > *{ flex:0 0 auto; }
+
+/* botões do topo */
+.header-item{ position:relative; }
+.btn-topbar{
+  width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid #283347; background:transparent; border-radius:50%; color:#cbd5e1;
+}
+.btn-topbar:hover{ background:rgba(255,255,255,.06); border-color:#344158; }
+.rounded-circle{ border-radius:50%; }
+
+/* usuário: variação escura (ícone) */
+.topbar .topbar-user .btn-topbar{
+  background:#1f2937; border-color:#283347; color:#e5e7eb;
+}
+.topbar .topbar-user .btn-topbar:hover{
+  background:#111827; border-color:#374151;
+}
+
+/* badge notificação */
+.topbar-badge{ transform:translate(8px,-6px); }
+
+/* ===== Topbar dropdowns (apenas clique via JS) ===== */
+.topbar [data-dropdown]{ position:relative; }
+.topbar .dropdown-menu{
+  position:absolute; right:0; top:100%;
+  min-width:220px; padding:10px;
+  border:1px solid var(--vz-border); background:#fff;
+  box-shadow:var(--shadow-sm); border-radius:8px;
+  display:none; z-index:1400;
+}
+.topbar [data-dropdown].show > .dropdown-menu,
+.topbar .dropdown-menu.show{ display:block; }
+
+/* ===== Utilitários usados no header ===== */
+.position-absolute{position:absolute}
+.d-none{display:none!important}
+.d-md-block{display:none!important}
+@media (min-width:768px){ .d-md-block{display:block!important} }
+.d-md-none{display:inline-flex!important}
+@media (min-width:768px){ .d-md-none{display:none!important} }
+.d-sm-flex{ display:none!important; }
+@media (min-width:576px){ .d-sm-flex{ display:flex!important; } }
+.d-sm-block{ display:none!important; }
+@media (min-width:576px){ .d-sm-block{ display:block!important; } }
+.d-xl-inline-block{ display:none!important; }
+@media (min-width:1200px){ .d-xl-inline-block{ display:inline-block!important; } }
+.d-xl-block{ display:none!important; }
+@media (min-width:1200px){ .d-xl-block{ display:block!important; } }
+.ms-1{margin-left:.25rem}.ms-2{margin-left:.5rem}.ms-sm-3{margin-left:1rem}
+.me-2{margin-right:.5rem}
+
+/* ===== Widgets do topo (stats) ===== */
+.stats-row{
+  display:grid; gap:16px; margin:12px 0 6px;
+  padding-left:var(--app-gutter); padding-right:var(--app-gutter);
+}
+.stat-card{
+  background:#fff; border:1px solid var(--vz-border); border-radius:0;
+  box-shadow:var(--shadow-sm); padding:16px 14px;
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+.stat-card:hover{ transform:translateY(-1px); box-shadow:var(--shadow-md); border-color:#e3e6ea; }
+.stat-title{
+  margin:0 0 8px 0; font-size:13px; font-weight:600; text-transform:uppercase;
+  letter-spacing:.2px; color:#878a99; display:flex; align-items:center; justify-content:space-between;
+}
+.stat-trend{ font-size:18px; }
+.stat-trend.up{ color:#0ab39c; }
+.stat-trend.down{ color:#f06548; }
+.stat-body{ display:flex; align-items:center; gap:12px; }
+.stat-icon{ flex:0 0 auto; color:#9196a5; }
+.stat-icon i{ font-size:42px; line-height:1; }
+.stat-number{ flex:1 1 auto; }
+.counter-value,.counter-int{ font-size:24px; font-weight:700; color:#495057; letter-spacing:.2px; }
+.stat-sub{ font-size:12px; color:#878a99; margin-top:2px; }
+
+/* ===== Linha 2: cards com donut + lista ===== */
+.row-like{
+  display:grid; gap:16px; margin:0 0 16px;
+  padding-left:var(--app-gutter); padding-right:var(--app-gutter);
+}
+.card{
+  background:var(--vz-card-bg); border:1px solid var(--vz-border); border-radius:0;
+  box-shadow:var(--shadow-sm); padding:18px 18px 16px;
+  display:flex; flex-direction:column; gap:10px;
+  transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease;
+}
+.card:hover{ transform:translateY(-1px); box-shadow:var(--shadow-md); border-color:#e3e6ea; }
+.card h4{ font-size:.95rem; font-weight:500; letter-spacing:.2px; color:var(--vz-heading); }
+
+/* card compacto (composição) */
+.card-compact{ height:460px; display:flex; flex-direction:column; padding:12px; }
+.card-compact .card-body-like{ flex:1 1 auto; display:flex; flex-direction:column; gap:8px; min-height:0; overflow:hidden; }
+.card-header-like{
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--vz-border); padding-bottom:6px; margin-bottom:6px; gap:6px;
+}
+.card-title{ font-weight:500; margin:0; }
+
+/* header actions (chip + ⋮) */
+.header-actions{ display:flex; align-items:center; gap:6px; flex:0 0 auto; }
+
+/* gráfico + lista */
+.chart-wrap{ flex:0 0 200px; height:200px; }
+@media (min-width:992px){ .chart-wrap{ flex-basis:220px; height:220px; } }
+@media (min-width:1400px){ .chart-wrap{ flex-basis:240px; height:240px; } }
+.chart-canvas{ width:100% !important; height:100% !important; display:block; }
+
+.list-scroll{ flex:1 1 auto; min-height:0; overflow-y:auto; padding-top:4px; padding-right:6px; }
+.list-scroll::-webkit-scrollbar{ width:8px; }
+.list-scroll::-webkit-scrollbar-thumb{ background:#cfd6df; border-radius:8px; }
+
+.list-group-like{ list-style:none; margin:0; padding:0; border-top:1px dashed var(--vz-border); }
+.list-group-like .list-item{ padding:10px 0; border-bottom:1px dashed var(--vz-border); }
+.list-group-like .list-item:last-child{ border-bottom:0; }
+.list-row{ display:flex; align-items:center; }
+.list-left{ display:flex; align-items:center; gap:8px; flex:1 1 auto; }
+.avatar-xs{
+  width:28px; height:28px; border-radius:50%; background:#f5f7fb; border:1px solid var(--vz-border);
+  display:flex; align-items:center; justify-content:center; color:#9196a5; font-size:16px;
+}
+.list-text h6{ font-size:.92rem; font-weight:500; color:#495057; }
+.list-text p{ font-size:.78rem; color:#878a99; margin-top:2px; }
+.list-right{ text-align:right; }
+.list-right .val{ font-size:.9rem; font-weight:500; color:#495057; }
+.list-right .pct{ font-size:.78rem; margin-top:2px; }
+.list-right .pct.up{ color:#0ab39c; }
+.list-right .pct.neutral{ color:#878a99; }
+
+/* ===== Filtros tipo "select" (⋮) ===== */
+.filter-chip{
+  display:inline-flex; align-items:center; padding:3px 8px;
+  font-size:11.5px; line-height:1; color:#4b5563;
+  background:#fff; border:1px solid var(--vz-border); border-radius:999px;
+}
+.btn.btn-icon{ display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; padding:0; }
+.btn-filter{
+  width:30px; height:30px; padding:0; border:none;
+  background:#fff; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;
+}
+.btn-filter i{ font-size:18px; }
+.btn-filter:hover{ background:#f8fafc; }
+
+/* dropdown-like dos filtros */
+.dropdown-like{ position:relative; }
+.dropdown-like-menu{
+  position:absolute; right:0; top:105%; min-width:140px; background:#fff;
+  border:1px solid var(--vz-border); box-shadow:var(--shadow-sm); display:none; z-index:25;
+}
+.dropdown-like.open .dropdown-like-menu{ display:block; }
+.dropdown-like-item{
+  display:block; width:100%; text-align:left; background:#fff; border:0;
+  padding:8px 10px; font-size:.9rem; cursor:pointer;
+}
+.dropdown-like-item:hover{ background:#f8fafc; }
+
+/* ===== Botões gerais ===== */
+button{
+  appearance:none; border:1px solid var(--vz-border); background:#fff; color:var(--vz-body);
+  border-radius:0; padding:8px 12px; font-weight:500; cursor:pointer;
+  transition: background .15s ease, border-color .15s ease, transform .12s ease;
+}
+button:hover{ background:#f8fafc; border-color:#e4e7ec; transform:translateY(-1px); }
+
+/* botão painel lateral */
+.btn-soft-info{ background:#e9f2ff; color:#405189; border:1px solid #dbe7ff; }
+.btn-soft-info:hover{ background:#dfeeff; border-color:#cfe1ff; }
+.layout-rightside-btn{ margin:12px 0 12px var(--app-gutter); }
+
+/* ===== Painel lateral ===== */
+.rightside-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.25);
+  opacity:0; transition:opacity .2s ease; z-index:1190; pointer-events:none;
+}
+.rightside-backdrop.show{ opacity:1; pointer-events:auto; }
+.rightside-panel{
+  position:fixed; top:0; right:0; height:100vh; width:min(420px, 92vw);
+  background:#fff; border-left:1px solid var(--vz-border);
+  box-shadow:-0.5rem 0 1.25rem rgba(56,65,74,.16);
+  transform:translateX(100%); transition:transform .25s ease;
+  z-index:1200; display:flex; flex-direction:column;
+}
+.rightside-panel.open{ transform:translateX(0); }
+.rightside-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--vz-border); }
+.rightside-title{ font-size:.95rem; font-weight:500; color:var(--vz-heading); }
+.rightside-close{ border:none; background:transparent; font-size:20px; padding:4px 8px; cursor:pointer; color:#878a99; }
+.rightside-body{ padding:14px; overflow:auto; flex:1 1 auto; }
+
+/* ===== Diagnósticos (chips + tooltip) ===== */
+.indicacao{ position:relative; display:inline-block; margin:6px 10px 0 0; }
+.chip-produto{
+  background:#f5f7fb; color:var(--vz-primary); border:1px solid var(--vz-border);
+  border-radius:999px; padding:8px 12px; font-weight:600; line-height:1; cursor:default;
+  transition: background .15s ease, transform .12s ease, border-color .15s ease;
+}
+.chip-produto:hover{ transform:translateY(-1px); background:#eef2f7; border-color:#e4e7ec; }
+.tooltip{
+  position:absolute; top:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  min-width:260px; max-width:360px; background:rgba(17,24,39,.98); color:#fff;
+  border-radius:0; padding:10px 12px; font-size:13.5px; line-height:1.35;
+  box-shadow:0 12px 24px rgba(0,0,0,.22); opacity:0; pointer-events:none; z-index:30; white-space:normal;
+  transition:opacity .12s ease;
+}
+.chip-produto:hover + .tooltip, .indicacao:hover .tooltip{ opacity:1; }
+.sem-indicacao{ color:var(--vz-muted); font-size:.95rem; margin-top:6px; }
+
+/* ===== Tabelas ===== */
+table{
+  width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; background:#fff;
+  border:1px solid var(--vz-border); border-radius:0; overflow:hidden;
+}
+td,th{ padding:10px 12px; border-bottom:1px solid var(--vz-border); vertical-align:top; font-size:.95rem; }
+tr:last-child td{ border-bottom:none; }
+
+/* ===== Modal ===== */
+.modal{
+  position:fixed; inset:0; background:rgba(0,0,0,.5);
+  display:none; justify-content:center; align-items:center; z-index:1300;
+}
+.modal-content{
+  background:#fff; padding:20px; border-radius:0; width:min(600px, 92vw);
+  max-height:90vh; overflow:auto; box-shadow:var(--shadow-md); border:1px solid var(--vz-border);
+}
+.close{ float:right; cursor:pointer; font-size:20px; color:var(--vz-muted); }
+
+/* ===== Cards clicáveis (acessibilidade) ===== */
+.is-clickable-card, .clickable-card{ cursor:pointer; }
+.is-clickable-card button, .is-clickable-card a, .is-clickable-card input, .is-clickable-card select, .is-clickable-card textarea,
+.clickable-card button, .clickable-card a, .clickable-card input, .clickable-card select, .clickable-card textarea{ cursor:auto; }
+
+/* ===== Responsividade das grades ===== */
+@media (min-width:1200px){
+  .stats-row, .row-like{ grid-template-columns:repeat(4, 1fr); }
+}
+@media (min-width:768px) and (max-width:1199.98px){
+  .stats-row, .row-like{ grid-template-columns:repeat(2, 1fr); }
+}
+@media (max-width:767.98px){
+  .stats-row, .row-like{ grid-template-columns:1fr; }
+}
+
+/* ===== Utilitárias de tipografia ===== */
+.text-muted{ color: var(--vz-muted) !important; }
+.text-primary{ color: var(--vz-primary) !important; }
+.text-success{ color: var(--vz-success) !important; }
+.text-danger{ color: var(--vz-danger) !important; }
+.text-warning{ color: var(--vz-warning) !important; }
+.text-uppercase{ text-transform: uppercase !important; }
+.text-lowercase{ text-transform: lowercase !important; }
+.text-capitalize{ text-transform: capitalize !important; }
+.text-wrap{ white-space: normal !important; }
+.text-nowrap{ white-space: nowrap !important; }
+.text-break{ word-wrap: break-word !important; word-break: break-word !important; }
+.lh-1{ line-height: 1 !important; }
+.lh-sm{ line-height: 1.25 !important; }
+.lh-base{ line-height: 1.5 !important; }
+.lh-lg{ line-height: 2 !important; }
+.fw-light{ font-weight: 300 !important; }
+.fw-normal{ font-weight: 400 !important; }
+.fw-medium{ font-weight: 500 !important; }
+.fw-semibold{ font-weight: 600 !important; }
+.fw-bold{ font-weight: 700 !important; }
+.fw-bolder{ font-weight: bolder !important; }
+.fw-lighter{ font-weight: lighter !important; }
+.fst-italic{ font-style: italic !important; }
+.fst-normal{ font-style: normal !important; }
+.fs-1{ font-size: 2.5rem !important; }
+.fs-2{ font-size: 2rem !important; }
+.fs-3{ font-size: 1.75rem !important; }
+.fs-4{ font-size: 1.5rem !important; }
+.fs-5{ font-size: 1.25rem !important; }
+.fs-6{ font-size: 1rem !important; }
+.fs-10{ font-size: 0.625rem !important; }
+.fs-11{ font-size: 0.6875rem !important; }
+.fs-12{ font-size: 0.75rem !important; }
+.fs-13{ font-size: 0.8125rem !important; }
+.fs-14{ font-size: 0.875rem !important; }
+.fs-22{ font-size:18px !important; }
+.lead{ font-size:1.25rem; font-weight:300; line-height:1.6; color:var(--vz-heading); }
+small,.small{ font-size: 0.875em; }
+h1,h2,h3,h4,h5,h6{ color:var(--vz-heading); line-height:1.25; margin:0 0 .5rem 0; }
+
+/* ===== Pequenos ajustes ===== */
+.stats-row > *, .row-like > *{ min-width:0; }
+.badge{ display:inline-block; padding:.25em .4em; font-size:.75em; border-radius:10rem; }
+.bg-danger{ background:#f06548; color:#fff; }
+.dropdown-divider{ height:1px; background:var(--vz-border); margin:.35rem 0; }
+.p-0{ padding:0 !important; }
+
+/* =========================================
+   Menus do TOPO (Notificações e Usuário)
+   — fontes menores e padrão de card
+========================================= */
+.dropdown-panel{
+  width:min(380px, 92vw);
+  background:var(--vz-card-bg);
+  border:1px solid var(--vz-border);
+  border-radius:0;
+  box-shadow:var(--shadow-md);
+  padding:0;
+  overflow:hidden;
+}
+
+/* Cabeçalho do dropdown */
+.dropdown-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid var(--vz-border); background:#fff;
+}
+.dropdown-head-left{ min-width:0; }
+.dropdown-title{ font-size:.90rem; font-weight:600; color:var(--vz-heading); letter-spacing:.2px; }
+.dropdown-sub{ font-size:.74rem; color:var(--vz-muted); margin-top:2px; font-weight:400; }
+.badge-soft{
+  display:inline-block; padding:4px 8px; border-radius:999px;
+  font-size:.70rem; color:#405189; background:#e9f2ff; border:1px solid #dbe7ff;
+  white-space:nowrap;
+}
+
+/* Abas internas */
+.dropdown-tabs{
+  display:flex; gap:8px; padding:10px 12px; border-bottom:1px dashed var(--vz-border); background:#fff;
+}
+.dropdown-tab{
+  appearance:none; border:1px solid transparent; background:transparent; color:#495057;
+  font-size:.72rem; font-weight:500; padding:6px 8px; border-radius:6px; cursor:pointer;
+}
+.dropdown-tab:hover{ background:#f8fafc; }
+.dropdown-tab.active{
+  background:#e9f2ff; border-color:#dbe7ff; color:#405189; font-weight:600;
+}
+
+/* Corpo e rodapé */
+.dropdown-body{ max-height:360px; overflow:auto; background:#fff; }
+.dropdown-foot{ padding:10px 12px; border-top:1px solid var(--vz-border); background:#fff; }
+
+/* Itens internos */
+.dropdown-panel,
+.topbar .dropdown-menu{ font-size:.84rem; }           /* fonte base MENOR nos dropdowns */
+.dropdown-panel .dropdown-item{ font-size:.78rem; }   /* itens ainda menores */
+
+/* User menu (lista) */
+#user-menu{ width:300px; }
+#user-menu .menu-list{ list-style:none; margin:0; padding:6px 0; }
+#user-menu .dropdown-item{
+  display:flex; align-items:center; gap:8px; padding:10px 12px;
+  font-size:.85rem; color:var(--vz-body);
+}
+#user-menu .dropdown-item i{ font-size:16px; color:#64748b; }
+#user-menu .dropdown-item:hover{ background:#f8fafc; color:var(--vz-heading); }
+#user-menu .dropdown-divider{ height:1px; background:var(--vz-border); margin:.35rem 0; }
+
+/* Notificações (reaproveita lista dos cards) */
+#notif-menu .list-group-like .list-item{ padding:10px 12px; }
+#notif-menu .list-group-like .list-item:last-child{ border-bottom:none; }
+
+
+/* ===== Tipografia menor — apenas nos cards de COMPOSIÇÃO ===== */
+.card.card-compact .card-title{
+  font-size:.78rem;   /* antes ~.95rem */
+  font-weight:500;
+}
+
+.card.card-compact .filter-chip{
+  font-size:10.5px;   /* antes ~11.5px */
+  padding:2px 6px;
+}
+
+.card.card-compact .btn-filter{
+  width:28px; height:28px;
+}
+.card.card-compact .btn-filter i{
+  font-size:16px;     /* ícone um pouco menor */
+}
+
+/* Lista da composição (esquerda) */
+.card.card-compact .list-text h6{
+  font-size:.86rem;   /* antes .92rem */
+  font-weight:500;
+}
+.card.card-compact .list-text p{
+  font-size:.72rem;   /* antes .78rem */
+}
+
+/* Valores (direita) */
+.card.card-compact .list-right .val{
+  font-size:.64rem;   /* antes .9rem */
+  font-weight:500;
+}
+.card.card-compact .list-right .pct{
+  font-size:.62rem;   /* antes .78rem */
+}
+
+/* Avatar do item da lista */
+.card.card-compact .avatar-xs{
+  width:24px; height:24px;
+  font-size:14px;
+}
+
+/* Itens do menu de filtro dentro do card */
+.card.card-compact .dropdown-like-item{
+  font-size:.82rem;   /* um degrau menor */
+  padding:6px 8px;
+}
