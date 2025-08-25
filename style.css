@@ -460,3 +460,28 @@ h1,h2,h3,h4,h5,h6{ color:var(--vz-heading); line-height:1.25; margin:0 0 .5rem 0
   font-size:.82rem;   /* um degrau menor */
   padding:6px 8px;
 }
+
+
+
+/* ===== Modal em tela cheia (quadrada) ===== */
+.modal.modal-full { 
+  background:#fff;       /* sem overlay escuro */
+  display:none;          /* segue padrão do .modal */
+}
+.modal.modal-full.show { 
+  display:flex;          /* abre em tela cheia */
+}
+.modal.modal-full .modal-content{
+  width:100vw;
+  height:100vh;
+  max-height:100vh;
+  border-radius:0;       /* quadrada */
+  border:none;
+  box-shadow:none;
+  padding:24px;
+  position:relative;
+}
+.modal-full .modal-content .close{
+  position:absolute; top:12px; right:16px;
+  font-size:22px; color:#64748b; cursor:pointer;
+}

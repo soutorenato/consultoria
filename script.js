@@ -1174,35 +1174,184 @@ Investimentos: ${formatBRL(mapaPatrimonio["Investimentos"])}<br>
   `);
 }
 
+
+
 /* ===========================================================
-   INICIALIZAÇÃO
+   RESET GERAL + MODAL FULLSCREEN + LOGOUT
+=========================================================== */
+// Deixa TODOS os campos (receitas, despesas e patrimônio) em branco e zera storage/aggregados
+function resetAllData() {
+  // 1) Apaga agregados/objetos
+  [
+    "receitasTotal",
+    "patrimonioTotal",
+    "despesasTotais",
+    "despesasDetalhadas",
+    "patrimonioDetalhado",
+    "__lastUpdate"
+  ].forEach(k => localStorage.removeItem(k));
+
+  // 2) Limpa RECEITAS campo a campo (fixas + variáveis)
+  try {
+    const allReceitas = []
+      .concat(typeof RECEITAS_FIXAS !== "undefined" ? RECEITAS_FIXAS : [])
+      .concat(typeof RECEITAS_VARIAVEIS !== "undefined" ? RECEITAS_VARIAVEIS : []);
+    allReceitas.forEach(nome => localStorage.removeItem(nome));
+  } catch {}
+
+  // 3) Limpa PATRIMÔNIO (com e sem acento + prefixados)
+  try {
+    const pats = (typeof patrimonioCampos !== "undefined"
+      ? patrimonioCampos
+      : ["Imóvel","Imovel","Veículo","Veiculo","Investimentos"]);
+
+    const pref = ["Patrimônio:", "Patrimonio:"];
+    pats.forEach(lbl => {
+      localStorage.removeItem(lbl);
+      if (lbl === "Imóvel") localStorage.removeItem("Imovel");
+      if (lbl === "Veículo") localStorage.removeItem("Veiculo");
+      pref.forEach(p => localStorage.removeItem(p + lbl));
+    });
+    // limpa chaves internas do detalhado, se houver
+    try {
+      const det = JSON.parse(localStorage.getItem("patrimonioDetalhado") || "{}");
+      Object.keys(det || {}).forEach(k => {
+        localStorage.removeItem(k);
+        pref.forEach(p => localStorage.removeItem(p + k));
+      });
+    } catch {}
+  } catch {}
+
+  // 4) Limpa DESPESAS por categoria/item (ids simples e prefixados)
+  try {
+    for (const [cat, itens] of Object.entries(despesasCategorias || {})) {
+      itens.forEach(it => {
+        localStorage.removeItem(it);
+        localStorage.removeItem(`${cat}:${it}`);
+        localStorage.removeItem(`${cat}:${it}`.normalize("NFD").replace(/[\u0300-\u036f]/g,""));
+      });
+    }
+  } catch {}
+
+  // 5) Apaga quaisquer chaves com prefixos conhecidos
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i) || "";
+    if (k.startsWith("Receitas:") || k.startsWith("Patrimônio:") || k.startsWith("Patrimonio:")) {
+      localStorage.removeItem(k);
+    }
+  }
+
+  // 6) Limpa TODOS inputs visíveis agora (se algum formulário/modaI estiver aberto)
+  clearAllFormInputsInDOM();
+
+  // 7) Zera widgets imediatamente
+  try {
+    document.getElementById("stat-receitas")?.replaceChildren(document.createTextNode("R$ 0,00"));
+    document.getElementById("stat-despesas")?.replaceChildren(document.createTextNode("R$ 0,00"));
+    document.getElementById("stat-patrimonio")?.replaceChildren(document.createTextNode("R$ 0,00"));
+    document.getElementById("stat-diagnosticos")?.replaceChildren(document.createTextNode("0"));
+  } catch {}
+
+  // 8) Re-render geral
+  window.refreshAllVisuals?.();
+
+  // 9) Notifica outras abas/janela
+  localStorage.setItem('__lastUpdate', String(Date.now()));
+}
+
+// Helper: apaga valores de TODOS os inputs/textarea/select atualmente no DOM
+function clearAllFormInputsInDOM() {
+  // Campos dos modais atuais (se abertos)
+  document.querySelectorAll('#modal-container input, #categoria-form input').forEach(inp => { inp.value = ''; });
+  // Se houver outros formulários em página (futuros)
+  document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="tel"]').forEach(i => i.value = '');
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  document.querySelectorAll('select').forEach(s => { s.selectedIndex = -1; }); // nenhum selecionado
+}
+
+
+
+/* Modal fullscreen de boas-vindas (abre sempre ao iniciar) */
+function openWelcomeModal() {
+  const modalContainer = document.getElementById("modal-container");
+  if (!modalContainer) return;
+
+  modalContainer.innerHTML = `
+    <div class="modal modal-full show" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <span class="close" aria-label="Fechar" onclick="fecharModal()">&times;</span>
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;text-align:center;">
+          <div>
+            <h2 style="margin-bottom:10px;color:#495057;font-weight:600;">Bem-vindo</h2>
+            <p style="color:#64748b;margin:0 0 16px;">Os dados iniciam zerados a cada abertura.</p>
+            <button onclick="fecharModal()" style="
+              appearance:none;border:1px solid var(--vz-border);background:#fff;color:var(--vz-body);
+              border-radius:0;padding:10px 14px;font-weight:600;cursor:pointer;">
+              Começar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* Fecha qualquer modal aberto (reusa sua função existente se houver) */
+function fecharModal() {
+  const c = document.getElementById("modal-container");
+  if (c) c.innerHTML = "";
+}
+
+/* Logout: limpa tudo e mostra modal de início */
+(function hookLogout(){
+  function isLogoutAnchor(el){
+    if (!el) return false;
+    if (el.id === "btn-logout") return true;
+    const txt = (el.textContent||"").toLowerCase();
+    return txt.includes("sair") || !!el.querySelector?.(".ri-logout-box-r-line");
+  }
+  document.addEventListener("click",(e)=>{
+    const a = e.target.closest("#btn-logout, #user-menu .dropdown-item, .topbar .dropdown-menu .dropdown-item");
+    if (!a) return;
+    if (!isLogoutAnchor(a)) return;
+    e.preventDefault();
+
+    // fecha dropdowns do topo
+    document.querySelectorAll(".topbar [data-dropdown].show").forEach(n => n.classList.remove("show"));
+
+    // limpa dados e reseta UI
+    resetAllData();
+    // abre modal de início
+    openWelcomeModal();
+  });
+})();
+
+
+
+
+
+
+
+/* ===========================================================
+   INICIALIZAÇÃO (sempre zerado + modal fullscreen)
 =========================================================== */
 window.addEventListener('load', function(){
-  // Carrega agregados existentes (se houver) para exibir valores-resumo
-  const r = parseFloat(localStorage.getItem("receitasTotal"));
-  const p = parseFloat(localStorage.getItem("patrimonioTotal"));
-  try { despesasTotais = JSON.parse(localStorage.getItem("despesasTotais") || "{}"); } catch { despesasTotais = {}; }
-
-  const elR = document.getElementById("valor-receitas");
-  if (!isNaN(r) && elR) elR.innerText = formatBRL(r);
-  const elP = document.getElementById("valor-patrimonio");
-  if (!isNaN(p) && elP) elP.innerText = formatBRL(p);
-  const elD = document.getElementById("valor-despesas");
-  if (elD) {
-    const totalGeral = Object.values(despesasTotais).reduce((a,b)=> a + (parseValorBR(b)||0), 0);
-    elD.innerText = formatBRL(totalGeral);
-  }
+  // zera tudo ao abrir
+  resetAllData();
 
   // Render dos donuts (2ª linha)
   renderReceitasDonut('todas');
   renderDespesasDonut('todas');
   renderPatrimonioDonut('todas');
 
-  // Widgets + Diagnóstico inicial + Painel lateral
+  // Widgets + Diagnóstico + Painel lateral
   updateTopWidgets();
   atualizarCard4Diagnostico();
   syncInsightsToPanel();
+
+  // Abre modal em tela cheia
+  openWelcomeModal();
 });
+
 
 /* APIs para atualizar via outros pontos do código */
 window.refreshDashboardWidgets = updateTopWidgets;
