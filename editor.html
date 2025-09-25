@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>CKEditor 5 – Lista custom + botão</title>
+
+  <!-- CKEditor 5 Classic build (CDN) -->
+  <script src="https://cdn.ckeditor.com/ckeditor5/41.2.1/classic/ckeditor.js"></script>
+
+  <style>
+    /* Estilo dos “botões” dentro do conteúdo */
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid #ddd;
+    }
+    .btn-primary {
+      background: #1f82c7;
+      color: #fff;
+      border-color: #1f82c7;
+    }
+
+    /* Estilo dos marcadores customizados */
+    /* Aplica-se às listas que tiverem class="custom-bullets" */
+    ul.custom-bullets { list-style: none; margin-left: 1.2em; padding-left: 0; }
+    ul.custom-bullets > li { position: relative; padding-left: 1.2em; }
+    ul.custom-bullets > li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0.1em;
+      font-weight: 700;
+      /* Se preferir, use emoji, outro símbolo ou mesmo uma imagem via background */
+      color: #16a34a;
+    }
+  </style>
+</head>
+<body>
+  <h2>Editor</h2>
+  <div id="editor">
+    <p>Selecione um texto e teste os botões “Lista ✓” e “Inserir Botão”.</p>
+  </div>
+
+  <script>
+    // Plugin simples para:
+    // 1) Criar botão "Lista ✓" que aplica/troca a classe `custom-bullets` no UL corrente.
+    // 2) Criar botão "Inserir Botão" que insere um <a class="btn btn-primary">.
+    class CustomUiPlugin {
+      static get requires() {
+        return [ 'List', 'GeneralHtmlSupport' ];
+      }
+      static get pluginName() { return 'CustomUiPlugin'; }
+
+      init() {
+        const editor = this.editor;
+
+        // --- Botão: Lista ✓ (aplica classe no <ul> mais próximo) ---
+        editor.ui.componentFactory.add('customBulletedList', locale => {
+          const view = new window.CKEDITOR5.ui.button.ButtonView(locale);
+          view.set({
+            label: 'Lista ✓',
+            withText: true,
+            tooltip: 'Transformar em lista com marcador ✓'
+          });
+
+          view.on('execute', () => {
+            // 1) Garante que é uma lista não ordenada
+            editor.execute('bulletedList');
+
+            // 2) Tenta pegar o UL no "view" e aplicar/remover a classe
+            const viewDoc = editor.editing.view.document;
+            const viewRoot = editor.editing.view;
+            const mapper = editor.editing.mapper;
+
+            editor.editing.view.change( writer => {
+              const sel = viewDoc.selection;
+              const pos = sel.getFirstPosition();
+              if (!pos) return;
+
+              // Pega o elemento do DOM de edição mapeado
+              // Sobe na árvore até achar um <ul>
+              let viewElement = pos.parent;
+              while (viewElement && viewElement.name !== 'ul') {
+                viewElement = viewElement.parent;
+              }
+
+              if (viewElement && viewElement.name === 'ul') {
+                const hasClass = viewElement.getAttribute('class')?.split(/\s+/).includes('custom-bullets');
+
+                // Alterna a classe
+                if (hasClass) {
+                  // Remove só a nossa classe mantendo outras
+                  const current = (viewElement.getAttribute('class') || '').split(/\s+/).filter(Boolean);
+                  const next = current.filter(c => c !== 'custom-bullets').join(' ') || null;
+                  if (next) writer.setAttribute('class', next, viewElement);
+                  else writer.removeAttribute('class', viewElement);
+                } else {
+                  const current = (viewElement.getAttribute('class') || '').trim();
+                  const next = (current ? current + ' ' : '') + 'custom-bullets';
+                  writer.setAttribute('class', next, viewElement);
+                }
+              }
+            });
+          });
+
+          return view;
+        });
+
+        // --- Botão: Inserir Botão (insere um <a class="btn btn-primary">) ---
+        editor.ui.componentFactory.add('insertCtaButton', locale => {
+          const view = new window.CKEDITOR5.ui.button.ButtonView(locale);
+          view.set({
+            label: 'Inserir Botão',
+            withText: true,
+            tooltip: 'Inserir um botão de ação'
+          });
+
+          view.on('execute', () => {
+            const html =
+              '<a href="#" class="btn btn-primary" data-cta="true">Chamar no WhatsApp</a>';
+
+            // Usa data.processor para converter HTML -> model de forma segura
+            const viewFragment = editor.data.processor.toView(html);
+            const modelFragment = editor.data.toModel(viewFragment);
+
+            editor.model.change(writer => {
+              editor.model.insertContent(modelFragment, editor.model.document.selection);
+            });
+          });
+
+          return view;
+        });
+      }
+    }
+
+    ClassicEditor.create(document.querySelector('#editor'), {
+      // Plugins essenciais + listas + suporte a HTML (classes/atributos)
+      plugins: [
+        CKEDITOR5.Essentials, CKEDITOR5.Paragraph, CKEDITOR5.Bold, CKEDITOR5.Italic,
+        CKEDITOR5.Link, CKEDITOR5.List, CKEDITOR5.GeneralHtmlSupport, CustomUiPlugin
+      ],
+      toolbar: [
+        'bold', 'italic', 'link', '|',
+        'bulletedList', 'numberedList', '|',
+        'customBulletedList', 'insertCtaButton', '|',
+        'undo', 'redo'
+      ],
+      // Permite classes/atributos no HTML (sem plugin premium)
+      htmlSupport: {
+        allow: [
+          { name: 'ul', attributes: [ 'class' ] },
+          { name: 'li', attributes: [ 'class' ] },
+          { name: 'a',  attributes: [ 'class', 'href', 'target', 'rel', 'data-cta' ] }
+        ]
+      },
+      link: {
+        // Opcional: forçar links externos a abrirem em nova aba com rel seguro
+        decorators: {
+          addTargetToExternalLinks: {
+            mode: 'automatic',
+            callback: url => /^(https?:)?\/\//.test(url),
+            attributes: { target: '_blank', rel: 'noopener noreferrer' }
+          }
+        }
+      }
+    })
+    .then(editor => {
+      window.editor = editor;
+      console.log('Editor pronto', editor);
+    })
+    .catch(console.error);
+  </script>
+</body>
+</html>
