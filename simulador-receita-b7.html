@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B7 | Simulador Receita</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #f4f6f9;
+      color: #1f2937;
+    }
+
+    header {
+      background: #071b3a;
+      color: white;
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 0 18px 40px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+
+    .card h3 {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .big-number {
+      font-size: 30px;
+      font-weight: 800;
+      color: #071b3a;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 15px;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid #071b3a33;
+      border-color: #071b3a;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-weight: 800;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-primary {
+      background: #071b3a;
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .table-wrap {
+      margin-top: 22px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th,
+    td {
+      padding: 14px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: #e0ecff;
+      color: #071b3a;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .remove {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .empty {
+      text-align: center;
+      color: #64748b;
+      padding: 28px;
+      background: white;
+      border-radius: 14px;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .summary {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      header {
+        align-items: flex-start;
+      }
+
+      .brand {
+        font-size: 24px;
+      }
+
+      .title {
+        font-size: 17px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .big-number {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">B7</div>
+  <div class="title">Simulador Receita</div>
+</header>
+
+<main>
+  <section class="summary">
+    <div class="card">
+      <h3>Receita total estimada</h3>
+      <div class="big-number" id="totalReceita">R$ 0,00</div>
+    </div>
+    <div class="card">
+      <h3>Produtos adicionados</h3>
+      <div class="big-number" id="totalProdutos">0</div>
+    </div>
+    <div class="card">
+      <h3>Maior receita</h3>
+      <div class="big-number" id="maiorReceita">R$ 0,00</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Adicionar produto</h2>
+
+    <div class="form-grid">
+      <div>
+        <label>Categoria</label>
+        <select id="categoria" onchange="atualizarProdutos()">
+          <option value="">Selecione</option>
+          <option value="Crédito">Crédito</option>
+          <option value="Investimentos">Investimentos</option>
+          <option value="Seguros">Seguros</option>
+          <option value="Consórcio">Consórcio</option>
+          <option value="Cartão">Cartão</option>
+          <option value="Câmbio">Câmbio</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Produto</label>
+        <select id="produto" onchange="renderizarCampos()">
+          <option value="">Selecione uma categoria</option>
+        </select>
+      </div>
+
+      <div id="camposDinamicos" style="display: contents;"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="adicionarProduto()">Adicionar à produção</button>
+      <button class="btn-secondary" onclick="limparTudo()">Limpar simulador</button>
+    </div>
+  </section>
+
+  <section class="table-wrap card">
+    <h2>Produção adicionada</h2>
+    <div id="emptyState" class="empty">Nenhum produto adicionado ainda.</div>
+    <table id="tabela" style="display:none;">
+      <thead>
+        <tr>
+          <th>Categoria</th>
+          <th>Produto</th>
+          <th>Valor</th>
+          <th>Detalhes</th>
+          <th>Receita estimada</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  const CDI_ANUAL = 0.105;
+  const SELIC_ANUAL = 0.105;
+
+  const produtosPorCategoria = {
+    "Crédito": [
+      "Empréstimo Consignado",
+      "Crédito Pessoal",
+      "Crédito com Garantia de Investimentos",
+      "Crédito com Garantia de Imóvel",
+      "Crédito com Garantia de Veículo",
+      "Financiamento Imobiliário",
+      "Financiamento de Veículo",
+      "Limite de Conta Corrente"
+    ],
+    "Investimentos": [
+      "CDB",
+      "Fundos de Investimento",
+      "Previdência Privada",
+      "Tesouro Direto",
+      "Renda Variável",
+      "COE",
+      "LCI / LCA",
+      "Poupança"
+    ],
+    "Seguros": [
+      "Seguro de Vida",
+      "Seguro Residencial",
+      "Seguro Auto",
+      "Seguro Viagem"
+    ],
+    "Consórcio": [
+      "Consórcio Imóvel",
+      "Consórcio Veículo"
+    ],
+    "Cartão": [
+      "Black / Infinite"
+    ],
+    "Câmbio": [
+      "Câmbio"
+    ]
+  };
+
+  let itens = [];
+
+  function dinheiro(valor) {
+    return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  function numero(id) {
+    const valor = document.getElementById(id)?.value || "0";
+    return Number(valor.replace(",", "."));
+  }
+
+  function campo(id, label, type = "number", placeholder = "") {
+    return `
+      <div>
+        <label>${label}</label>
+        <input id="${id}" type="${type}" step="0.01" placeholder="${placeholder}">
+      </div>
+    `;
+  }
+
+  function atualizarProdutos() {
+    const categoria = document.getElementById("categoria").value;
+    const produto = document.getElementById("produto");
+    produto.innerHTML = "";
+
+    if (!categoria) {
+      produto.innerHTML = '<option value="">Selecione uma categoria</option>';
+      document.getElementById("camposDinamicos").innerHTML = "";
+      return;
+    }
+
+    produto.innerHTML = '<option value="">Selecione</option>' +
+      produtosPorCategoria[categoria].map(p => `<option value="${p}">${p}</option>`).join("");
+
+    renderizarCampos();
+  }
+
+  function renderizarCampos() {
+    const categoria = document.getElementById("categoria").value;
+    const produto = document.getElementById("produto").value;
+    const box = document.getElementById("camposDinamicos");
+
+    if (!produto) {
+      box.innerHTML = "";
+      return;
+    }
+
+    let html = "";
+
+    if (categoria === "Crédito") {
+      html += campo("valor", "Valor da operação", "number", "Ex: 50000");
+
+      if (produto !== "Limite de Conta Corrente") {
+        html += campo("prazo", "Prazo em meses", "number", "Ex: 36");
+      }
+
+      if (produto === "Financiamento Imobiliário") {
+        html += campo("taxa", "Taxa anual (%)", "number", "Ex: 10");
+      } else {
+        html += campo("taxa", "Taxa mensal (%)", "number", "Ex: 2.5");
+      }
+    }
+
+    if (categoria === "Investimentos") {
+      html += campo("valor", "Valor aplicado", "number", "Ex: 100000");
+
+      if (produto === "CDB") {
+        html += campo("percentualCDI", "Percentual do CDI (%)", "number", "Ex: 100");
+      }
+
+      if (produto === "LCI / LCA") {
+        html += campo("percentualCDI", "Percentual do CDI (%)", "number", "Ex: 95");
+      }
+
+      if (produto === "Fundos de Investimento" || produto === "Previdência Privada") {
+        html += campo("taxaAdmin", "Taxa de administração anual (%)", "number", "Ex: 1.5");
+      }
+
+      if (produto === "COE") {
+        html += campo("taxaRentabilidade", "Taxa / spread da operação (%)", "number", "Ex: 10");
+      }
+    }
+
+    if (categoria === "Seguros") {
+      html += campo("parcela", "Valor da parcela mensal", "number", "Ex: 150");
+
+      if (produto === "Seguro Viagem") {
+        html += campo("prazo", "Prazo em meses", "number", "Ex: 6");
+      }
+    }
+
+    if (categoria === "Consórcio") {
+      html += campo("valor", "Valor do consórcio", "number", "Ex: 300000");
+      html += campo("taxaAdmin", "Taxa de administração total (%)", "number", "Ex: 20");
+      html += campo("prazo", "Prazo em meses", "number", "Ex: 180");
+    }
+
+    if (categoria === "Cartão") {
+      html += campo("valor", "Gasto mensal no cartão", "number", "Ex: 10000");
+    }
+
+    if (categoria === "Câmbio") {
+      html += campo("valor", "Valor da operação", "number", "Ex: 50000");
+    }
+
+    box.innerHTML = html;
+  }
+
+  function calcularReceita(categoria, produto) {
+    const valor = numero("valor");
+    const taxa = numero("taxa") / 100;
+    const prazo = numero("prazo");
+    const parcela = numero("parcela");
+
+    if (categoria === "Crédito") {
+      let spread = 0;
+
+      if (produto === "Empréstimo Consignado") spread = 0.60;
+      if (produto === "Crédito Pessoal") spread = 0.70;
+      if (produto === "Crédito com Garantia de Investimentos") spread = 0.40;
+      if (produto === "Crédito com Garantia de Imóvel") spread = 0.40;
+      if (produto === "Crédito com Garantia de Veículo") spread = 0.40;
+      if (produto === "Financiamento de Veículo") spread = 0.40;
+      if (produto === "Limite de Conta Corrente") spread = 0.80;
+
+      if (produto === "Financiamento Imobiliário") {
+        const taxaMensal = Math.pow(1 + taxa, 1 / 12) - 1;
+        return valor * taxaMensal * 0.30;
+      }
+
+      if (produto === "Limite de Conta Corrente") {
+        return valor * taxa * spread;
+      }
+
+      return valor * taxa * spread;
+    }
+
+    if (categoria === "Investimentos") {
+      const cdiMensal = CDI_ANUAL / 12;
+      const selicMensal = SELIC_ANUAL / 12;
+
+      if (produto === "CDB") {
+        const percentualCDI = numero("percentualCDI");
+        const margem = Math.max(105 - percentualCDI, 0) / 100;
+        return valor * cdiMensal * margem;
+      }
+
+      if (produto === "LCI / LCA") {
+        const percentualCDI = numero("percentualCDI");
+        const margem = Math.max(110 - percentualCDI, 0) / 100;
+        return valor * cdiMensal * margem;
+      }
+
+      if (produto === "Fundos de Investimento" || produto === "Previdência Privada") {
+        const taxaAdminMensal = (numero("taxaAdmin") / 100) / 12;
+        return valor * taxaAdminMensal * 0.50;
+      }
+
+      if (produto === "Tesouro Direto") {
+        return valor * selicMensal * 0.30;
+      }
+
+      if (produto === "Renda Variável") {
+        return valor * 0.002;
+      }
+
+      if (produto === "COE") {
+        return valor * (numero("taxaRentabilidade") / 100);
+      }
+
+      if (produto === "Poupança") {
+        return valor * selicMensal * 0.05;
+      }
+    }
+
+    if (categoria === "Seguros") {
+      if (produto === "Seguro de Vida") return parcela * 36 * 0.47;
+      if (produto === "Seguro Residencial") return parcela * 36 * 0.43;
+      if (produto === "Seguro Auto") return parcela * 12 * 0.10;
+      if (produto === "Seguro Viagem") return parcela * prazo * 0.60;
+    }
+
+    if (categoria === "Consórcio") {
+      const taxaAdmin = numero("taxaAdmin") / 100;
+      if (!prazo) return 0;
+      return (valor * taxaAdmin * 0.50) / prazo;
+    }
+
+    if (categoria === "Cartão") {
+      return valor * 0.0158;
+    }
+
+    if (categoria === "Câmbio") {
+      return valor * 0.0839;
+    }
+
+    return 0;
+  }
+
+  function montarDetalhes(categoria, produto) {
+    if (categoria === "Crédito") {
+      if (produto === "Financiamento Imobiliário") {
+        return `Taxa anual: ${numero("taxa").toFixed(2)}%`;
+      }
+      if (produto === "Limite de Conta Corrente") {
+        return `Taxa mensal: ${numero("taxa").toFixed(2)}%`;
+      }
+      return `Prazo: ${numero("prazo")} meses | Taxa mensal: ${numero("taxa").toFixed(2)}%`;
+    }
+
+    if (categoria === "Investimentos") {
+      if (produto === "CDB" || produto === "LCI / LCA") return `${numero("percentualCDI").toFixed(2)}% do CDI`;
+      if (produto === "Fundos de Investimento" || produto === "Previdência Privada") return `Taxa adm. anual: ${numero("taxaAdmin").toFixed(2)}%`;
+      if (produto === "COE") return `Taxa: ${numero("taxaRentabilidade").toFixed(2)}%`;
+      return "Regra automática";
+    }
+
+    if (categoria === "Seguros") {
+      if (produto === "Seguro Viagem") return `Parcela: ${dinheiro(numero("parcela"))} | Prazo: ${numero("prazo")} meses`;
+      return `Parcela mensal: ${dinheiro(numero("parcela"))}`;
+    }
+
+    if (categoria === "Consórcio") {
+      return `Taxa adm.: ${numero("taxaAdmin").toFixed(2)}% | Prazo: ${numero("prazo")} meses`;
+    }
+
+    if (categoria === "Cartão") return "Receita sobre gasto mensal";
+    if (categoria === "Câmbio") return "Taxa automática da operação";
+
+    return "";
+  }
+
+  function adicionarProduto() {
+    const categoria = document.getElementById("categoria").value;
+    const produto = document.getElementById("produto").value;
+
+    if (!categoria || !produto) {
+      alert("Selecione a categoria e o produto.");
+      return;
+    }
+
+    const valorBase = numero("valor") || numero("parcela");
+    const receita = calcularReceita(categoria, produto);
+
+    if (!receita || receita <= 0) {
+      alert("Preencha os campos corretamente para calcular a receita.");
+      return;
+    }
+
+    itens.push({
+      categoria,
+      produto,
+      valor: valorBase,
+      detalhes: montarDetalhes(categoria, produto),
+      receita
+    });
+
+    renderizarTabela();
+  }
+
+  function removerItem(index) {
+    itens.splice(index, 1);
+    renderizarTabela();
+  }
+
+  function limparTudo() {
+    if (confirm("Deseja limpar todos os produtos adicionados?")) {
+      itens = [];
+      renderizarTabela();
+    }
+  }
+
+  function renderizarTabela() {
+    const tbody = document.getElementById("tbody");
+    const tabela = document.getElementById("tabela");
+    const empty = document.getElementById("emptyState");
+
+    tbody.innerHTML = "";
+
+    itens.forEach((item, index) => {
+      tbody.innerHTML += `
+        <tr>
+          <td><span class="tag">${item.categoria}</span></td>
+          <td>${item.produto}</td>
+          <td>${dinheiro(item.valor)}</td>
+          <td>${item.detalhes}</td>
+          <td><strong>${dinheiro(item.receita)}</strong></td>
+          <td><button class="remove" onclick="removerItem(${index})">Remover</button></td>
+        </tr>
+      `;
+    });
+
+    const total = itens.reduce((soma, item) => soma + item.receita, 0);
+    const maior = itens.length ? Math.max(...itens.map(item => item.receita)) : 0;
+
+    document.getElementById("totalReceita").innerText = dinheiro(total);
+    document.getElementById("totalProdutos").innerText = itens.length;
+    document.getElementById("maiorReceita").innerText = dinheiro(maior);
+
+    tabela.style.display = itens.length ? "table" : "none";
+    empty.style.display = itens.length ? "none" : "block";
+  }
+</script>
+
+</body>
+</html>
